@@ -1,5 +1,7 @@
 package dev.dougman.springflash.commands;
 
+import dev.dougman.springflash.Promptable;
+import dev.dougman.springflash.Question;
 import dev.dougman.springflash.enums.Search;
 import dev.dougman.springflash.templates.Template;
 import dev.dougman.springflash.utils.IoUtils;
@@ -12,6 +14,7 @@ import picocli.CommandLine.Parameters;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -22,6 +25,11 @@ public abstract class BaseMaker implements Callable<Integer> {
 
     @Option(names = {"-p", "--package"}, description = "Path to main package", interactive = true)
     protected String pkg = "";
+
+    /**
+     * Contains list of answers from the prompted questions.
+     */
+    protected List<String> promptedAnswers;
 
     /**
      * Get the template we're baking.
@@ -47,6 +55,17 @@ public abstract class BaseMaker implements Callable<Integer> {
         );
     }
 
+    private void promptUser() {
+        if (!(this instanceof Promptable)) {
+            return;
+        }
+
+        Promptable self = (Promptable) this;
+        Question questions = self.prompt();
+
+        questions.ask();
+    }
+
     /**
      * Base execution logic for making new components.
      *
@@ -57,6 +76,8 @@ public abstract class BaseMaker implements Callable<Integer> {
         pkg = pkg.toLowerCase();
         name = StringUtils.convertToStartCase(name);
         Path path = IoUtils.computePath(pkg, English.plural(getTarget()), name);
+
+        this.promptUser();
 
         if (!IoUtils.createFile(path, template().get(searchReplaceMap()))) {
             return 1;

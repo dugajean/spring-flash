@@ -1,6 +1,7 @@
 package dev.dougman.springflash.commands;
 
 import dev.dougman.springflash.enums.Search;
+import dev.dougman.springflash.templates.Template;
 import dev.dougman.springflash.utils.IoUtils;
 import dev.dougman.springflash.utils.StringUtils;
 import org.atteo.evo.inflector.English;
@@ -10,6 +11,7 @@ import picocli.CommandLine.Parameters;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -22,9 +24,9 @@ public abstract class BaseMaker implements Callable<Integer> {
     protected String pkg = "";
 
     /**
-     * Get the stub content.
+     * Get the template we're baking.
      */
-    protected abstract String getStub();
+    protected abstract Template template();
 
     /**
      * Simple indicator as to what we're creating.
@@ -54,8 +56,9 @@ public abstract class BaseMaker implements Callable<Integer> {
     public Integer call() throws IOException {
         pkg = pkg.toLowerCase();
         name = StringUtils.convertToStartCase(name);
+        Path path = IoUtils.computePath(pkg, English.plural(getTarget()), name);
 
-        if (!IoUtils.createFile(IoUtils.computePath(pkg, English.plural(getTarget()), name), getStub())) {
+        if (!IoUtils.createFile(path, template().get(searchReplaceMap()))) {
             return 1;
         }
 

@@ -6,7 +6,7 @@ import picocli.CommandLine.Command;
 @Command(name = "make:repository", description = "Generate a repository stub.")
 public class RepositoryMaker extends BaseMaker {
     @Override
-    protected String getStub() {
-        return new RepositoryTemplate().get(searchReplaceMap());
+    protected RepositoryTemplate template() {
+        return new RepositoryTemplate();
     }
 }

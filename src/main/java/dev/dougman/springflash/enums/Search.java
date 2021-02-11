@@ -7,4 +7,5 @@ public enum Search {
     ENTITY_STUDLY_SINGULAR,
     FIELD_TYPE,
     FIELD_NAME_LOWER,
+    ENTITY_FIELDS
 }

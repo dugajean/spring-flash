@@ -18,11 +18,14 @@ import javax.persistence.*;
 public class %2$s {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    
+    %3$s
 }
 
         """.formatted(
             map.get(Search.PACKAGE),
-            map.get(Search.ENTITY_STUDLY_SINGULAR)
+            map.get(Search.ENTITY_STUDLY_SINGULAR),
+            map.get(Search.ENTITY_FIELDS)
         );
     }
 }

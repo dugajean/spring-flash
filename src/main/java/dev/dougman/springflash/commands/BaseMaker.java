@@ -1,7 +1,6 @@
 package dev.dougman.springflash.commands;
 
-import dev.dougman.springflash.Promptable;
-import dev.dougman.springflash.Question;
+import dev.dougman.springflash.inputs.Askable;
 import dev.dougman.springflash.enums.Search;
 import dev.dougman.springflash.templates.Template;
 import dev.dougman.springflash.utils.IoUtils;
@@ -14,7 +13,7 @@ import picocli.CommandLine.Parameters;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -29,7 +28,7 @@ public abstract class BaseMaker implements Callable<Integer> {
     /**
      * Contains list of answers from the prompted questions.
      */
-    protected List<String> promptedAnswers;
+    protected String promptedAnswers = "";
 
     /**
      * Get the template we're baking.
@@ -47,23 +46,29 @@ public abstract class BaseMaker implements Callable<Integer> {
      * Search-Replace keywords used in stubs.
      */
     protected Map<Search, String> searchReplaceMap() {
-        return Map.of(
-            Search.PACKAGE, pkg.replace(File.separator, "."),
-            Search.ENTITY_STUDLY_SINGULAR, StringUtils.convertToStartCase(name),
-            Search.ENTITY_LOWER_SINGULAR, name.toLowerCase(),
-            Search.ENTITY_LOWER_PLURAL, English.plural(name.toLowerCase())
-        );
+        var map = new HashMap<Search, String>();
+        map.put(Search.PACKAGE, pkg.replace(File.separator, "."));
+        map.put(Search.ENTITY_STUDLY_SINGULAR, StringUtils.convertToStartCase(name));
+        map.put(Search.ENTITY_LOWER_SINGULAR, name.toLowerCase());
+        map.put(Search.ENTITY_LOWER_PLURAL, English.plural(name.toLowerCase()));
+
+        if (promptable()) {
+            Promptable self = (Promptable) this;
+            map.put(self.targetKey(), promptedAnswers);
+        }
+
+        return map;
+    }
+
+    private boolean promptable() {
+        return this instanceof Promptable;
     }
 
     private void promptUser() {
-        if (!(this instanceof Promptable)) {
-            return;
-        }
-
         Promptable self = (Promptable) this;
-        Question questions = self.prompt();
+        Askable questions = self.prompt();
 
-        questions.ask();
+        promptedAnswers = questions.ask();
     }
 
     /**
@@ -77,7 +82,9 @@ public abstract class BaseMaker implements Callable<Integer> {
         name = StringUtils.convertToStartCase(name);
         Path path = IoUtils.computePath(pkg, English.plural(getTarget()), name);
 
-        this.promptUser();
+        if (promptable()) {
+            this.promptUser();
+        }
 
         if (!IoUtils.createFile(path, template().get(searchReplaceMap()))) {
             return 1;

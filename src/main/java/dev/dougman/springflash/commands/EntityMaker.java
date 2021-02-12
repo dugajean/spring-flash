@@ -8,7 +8,7 @@ import dev.dougman.springflash.templates.EntityTemplate;
 import dev.dougman.springflash.templates.FieldTemplate;
 import picocli.CommandLine.Command;
 
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 @Command(name = "make:entity", description = "Generate a entity stub.")
 public class EntityMaker extends BaseMaker implements Promptable {
@@ -19,10 +19,9 @@ public class EntityMaker extends BaseMaker implements Promptable {
 
     @Override
     public Askable prompt() {
-        Map<Search, Question> questionsMap = Map.of(
-            Search.FIELD_NAME_LOWER, new Question("Field name"),
-            Search.FIELD_TYPE, new Question("Field type (String, boolean, int, float, etc.)")
-        );
+        var questionsMap = new LinkedHashMap<Search, Question>();
+        questionsMap.put(Search.FIELD_NAME_LOWER, new Question("Field name"));
+        questionsMap.put(Search.FIELD_TYPE, new Question("Field type (String, boolean, int, float, etc.)"));
 
         return new QuestionSequence(questionsMap, new FieldTemplate());
     }

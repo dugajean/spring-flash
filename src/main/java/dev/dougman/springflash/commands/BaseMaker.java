@@ -36,6 +36,11 @@ public abstract class BaseMaker implements Callable<Integer> {
     protected abstract Template template();
 
     /**
+     * Whether the instance of this maker will cause a prompt/ask questions.
+     */
+    protected final boolean isPromptable = this instanceof Promptable;
+
+    /**
      * Simple indicator as to what we're creating.
      */
     protected String getTarget() {
@@ -52,7 +57,7 @@ public abstract class BaseMaker implements Callable<Integer> {
         map.put(Search.ENTITY_LOWER_SINGULAR, name.toLowerCase());
         map.put(Search.ENTITY_LOWER_PLURAL, English.plural(name.toLowerCase()));
 
-        if (promptable()) {
+        if (isPromptable) {
             Promptable self = (Promptable) this;
             map.put(self.targetKey(), promptedAnswers);
         }
@@ -60,11 +65,14 @@ public abstract class BaseMaker implements Callable<Integer> {
         return map;
     }
 
-    private boolean promptable() {
-        return this instanceof Promptable;
-    }
+    /**
+     * Trigger user questions if they're present.
+     */
+    protected void triggerPromptableMaker() {
+        if (!isPromptable) {
+            return;
+        }
 
-    private void promptUser() {
         Promptable self = (Promptable) this;
         Askable questions = self.prompt();
 
@@ -82,9 +90,7 @@ public abstract class BaseMaker implements Callable<Integer> {
         name = StringUtils.convertToStartCase(name);
         Path path = IoUtils.computePath(pkg, English.plural(getTarget()), name);
 
-        if (promptable()) {
-            this.promptUser();
-        }
+        this.triggerPromptableMaker();
 
         if (!IoUtils.createFile(path, template().get(searchReplaceMap()))) {
             return 1;

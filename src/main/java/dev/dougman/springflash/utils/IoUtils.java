@@ -25,7 +25,7 @@ public class IoUtils {
             throw new IOException("Path %s does not exist".formatted(sourcePath.toString()));
         }
 
-        return Paths.get(sourcePath.toString(), path, target, name + ".java");
+        return Paths.get(sourcePath.toString(), "main", "java", path, target, name + ".java");
     }
 
     /**

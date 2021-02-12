@@ -8,6 +8,8 @@ public class Question implements Askable {
 
     /**
      * Question constructor.
+     *
+     * @param question The question being asked.
      */
     public Question(String question) {
         this.question = question;

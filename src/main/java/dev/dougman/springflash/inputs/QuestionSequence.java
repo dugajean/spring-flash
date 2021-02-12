@@ -26,6 +26,9 @@ public class QuestionSequence implements Askable {
 
     /**
      * Constructor.
+     *
+     * @param questionsMap Map of Search key and Question instance.
+     * @param template The template that will be used to shape the answers.
      */
     public QuestionSequence(Map<Search, Question> questionsMap, Template template) {
         this.questions = new ArrayList<>(questionsMap.values());

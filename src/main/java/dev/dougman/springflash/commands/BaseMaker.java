@@ -23,7 +23,7 @@ public abstract class BaseMaker implements Callable<Integer> {
     protected String name;
 
     @Option(names = {"-p", "--package"}, description = "Path to main package", interactive = true)
-    protected String pkg = "";
+    protected String packagePath = "";
 
     /**
      * Contains list of answers from the prompted questions.
@@ -52,7 +52,7 @@ public abstract class BaseMaker implements Callable<Integer> {
      */
     protected Map<Search, String> searchReplaceMap() {
         var map = new HashMap<Search, String>();
-        map.put(Search.PACKAGE, pkg.replace(File.separator, "."));
+        map.put(Search.PACKAGE, packagePath.replace(File.separator, "."));
         map.put(Search.ENTITY_STUDLY_SINGULAR, StringUtils.convertToStartCase(name));
         map.put(Search.ENTITY_LOWER_SINGULAR, name.toLowerCase());
         map.put(Search.ENTITY_LOWER_PLURAL, English.plural(name.toLowerCase()));
@@ -86,9 +86,9 @@ public abstract class BaseMaker implements Callable<Integer> {
      */
     @Override
     public Integer call() throws IOException {
-        pkg = pkg.toLowerCase();
+        packagePath = packagePath.toLowerCase();
         name = StringUtils.convertToStartCase(name);
-        Path path = IoUtils.computePath(pkg, English.plural(getTarget()), name);
+        Path path = IoUtils.computePath(packagePath.replaceAll("\\.", File.separator), English.plural(getTarget()), name);
 
         this.triggerPromptableMaker();
 
